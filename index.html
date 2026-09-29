@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Set Link Sheet</title>
+    <title>セッション！セットリスト共有ツール</title>
     
     <!-- ブックマーク用アイコンの設定（PNG用） -->
     <link rel="icon" type="image/png" href="favicon.png">
@@ -20,7 +20,7 @@
 
     <style>
         /* =========================================
-           CSS変数によるテーマ管理
+            CSS変数によるテーマ管理
         ========================================= */
         :root {
             --bg-color: #121212; --text-color: #e0e0e0; --panel-bg: #1e1e1e;
@@ -35,7 +35,7 @@
         body.theme-eva08 { --bg-color: #fff0f5; --text-color: #4a152e; --panel-bg: #ffffff; --border-color: #ff66b2; --btn-bg: #ffe6f0; --btn-hover: #ffcce0; --primary: #ff3399; --primary-text: #ffffff; --link-color: #e60073; --th-bg: #ff66b2; --th-hover: #ff4d94; --th-text: #ffffff; }
 
         /* =========================================
-           基本レイアウト
+            基本レイアウト
         ========================================= */
         body { 
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; 
@@ -66,7 +66,7 @@
         .room-actions button { background-color: var(--panel-bg); color: var(--text-color); border: 1px solid var(--border-color); padding: 6px 12px; font-size: 12px; }
         .room-actions button.btn-danger { background-color: #dc3545; color: white; border: none; }
 
-        .loading-area { padding: 50px; text-align: center; background-color: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border-color); font-size: 18px; font-weight: bold; color: var(--primary); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1;}
+        .loading-area { padding: 30px 20px; text-align: center; background-color: var(--panel-bg); border-radius: 8px; border: 1px solid var(--border-color); font-size: 16px; color: var(--text-color); display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; overflow-y: auto;}
         .spinner { border: 4px solid var(--border-color); border-top: 4px solid var(--primary); border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin-bottom: 15px;}
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         
@@ -83,7 +83,7 @@
         .genre-btn.active { background-color: var(--primary); color: var(--primary-text); border-color: var(--primary); }
 
         /* =========================================
-           テーブル
+            テーブル
         ========================================= */
         #tableWrapper { flex-grow: 1; display: none; flex-direction: column; background-color: var(--panel-bg); border-top: 2px solid var(--primary); border-radius: 4px; overflow: hidden; }
         .table-header-wrapper { flex-shrink: 0; background-color: var(--th-bg); padding-right: 10px; border-bottom: 1px solid var(--border-color); overflow-x: hidden; }
@@ -117,7 +117,7 @@
         a:hover { text-decoration: underline; }
 
         /* =========================================
-           モーダル・キュー（予約リスト）
+            モーダル・キュー（予約リスト）
         ========================================= */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; }
         .modal { background: var(--panel-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
@@ -146,7 +146,7 @@
         .btn-revert { background-color: #6c757d; }
 
         /* =========================================
-           スマホ幅向け調整
+            スマホ幅向け調整
         ========================================= */
         @media (max-width: 600px) {
             .container { padding: 12px 12px 0 12px; gap: 10px; }
@@ -192,13 +192,15 @@
         <div class="header">
             <div style="display: flex; align-items: center; gap: 10px;">
                 <img src="logo2.png" alt="" class="logo-img" style="max-height: 45px; width: auto; object-fit: contain;" onerror="this.style.display='none'">
-                <h1 style="margin: 0; font-size: 24px;">Set Link Sheet ~セットリスト共有ツール~</h1>
+                <h1 style="margin: 0; font-size: 24px;">セッション！セットリスト共有ツール</h1>
             </div>
 
             <div class="header-buttons">
-                <!-- ★CSVインポートボタン -->
-                <button onclick="document.getElementById('csvFileInput').click()" style="background-color: #28a745; color: white; border: none;">📁 CSVインポート</button>
-                <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none;" onchange="handleFileImport(event)">
+                <!-- ★CSVフォーマットダウンロードボタン -->
+                <button onclick="downloadCsvFormat()" style="background-color: #28a745; color: white; border: none;">📥 CSVフォーマットをダウンロード</button>
+
+                <!-- ★使い方マニュアルボタン -->
+                <button onclick="openModal('manualModal')" style="background-color: #17a2b8; color: white; border: none;">📖 使い方マニュアル</button>
 
                 <button id="createRoomBtn" onclick="createRoom()">🌐 ルームを作る</button>
                 <button onclick="openModal('settingsModal')">⚙️ 設定</button>
@@ -232,10 +234,27 @@
         </div>
     </div>
 
-    <!-- 初期ロード / 未読込時の案内画面 -->
+    <!-- 初期ロード / 未読込時の案内画面（バージョン情報追加） -->
     <div class="loading-area" id="loadingArea">
-        <div style="font-size: 18px; margin-bottom: 15px;">曲データ（CSV）が読み込まれていません</div>
-        <button onclick="document.getElementById('csvFileInput').click()" class="primary-btn" style="padding: 12px 24px; font-size: 16px;">📁 CSVファイルを選択してはじめる</button>
+        <div style="font-size: 18px; font-weight: bold; margin-bottom: 10px;">曲データ（CSV）が読み込まれていません</div>
+        <p style="font-size: 13px; opacity: 0.8; margin-bottom: 20px;">上の「CSVフォーマットをダウンロード」からテンプレートを取得し、ご自身の曲データを入力してインポートしてください。</p>
+        
+        <button onclick="document.getElementById('csvFileInput').click()" class="primary-btn" style="padding: 12px 24px; font-size: 16px; margin-bottom: 25px;">📁 CSVファイルを選択してはじめる</button>
+        <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none;" onchange="handleFileImport(event)">
+
+        <!-- バージョン＆アップデート情報エリア -->
+        <div style="background: var(--bg-color); border: 1px solid var(--border-color); border-radius: 6px; padding: 15px; width: 100%; max-width: 500px; text-align: left; font-size: 13px; box-sizing: border-box;">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 8px;">
+                <span style="font-weight: bold; color: var(--primary);">🏷️ バージョン情報</span>
+                <span style="background: var(--primary); color: var(--primary-text); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">Ver 1.0.0</span>
+            </div>
+            <div style="font-weight: bold; margin-bottom: 4px;">🚀 アップデート情報</div>
+            <ul style="margin: 0; padding-left: 18px; line-height: 1.5; opacity: 0.9;">
+                <li>CSVフォーマットのローカルダウンロード機能を追加しました。</li>
+                <li>ヘッダーに分かりやすい使い方マニュアルを常設しました。</li>
+                <li>リアルタイムセッションルームおよびセットリスト画像保存機能を搭載しました。</li>
+            </ul>
+        </div>
     </div>
 
     <div id="tableWrapper">
@@ -264,6 +283,28 @@
 </div>
 
 <!-- ================= モーダル群 ================= -->
+
+<!-- 使い方マニュアルモーダル -->
+<div class="modal-overlay" id="manualModal" onclick="closeModal(event, 'manualModal')">
+    <div class="modal" onclick="event.stopPropagation()">
+        <span class="modal-close" onclick="closeModal(null, 'manualModal')">&times;</span>
+        <h2>📖 使い方マニュアル</h2>
+        <div style="font-size: 13px; line-height: 1.7;">
+            <p><b>1. CSVデータの準備と読み込み</b><br>
+            上部の「📥 CSVフォーマットをダウンロード」ボタンからテンプレートCSVを保存してください。Excel等でご自身の曲データを入力・保存後、「CSVファイルを選択してはじめる」ボタン（またはアプリ起動画面）からファイルを読み込むと曲一覧が反映されます。</p>
+            
+            <p><b>2. リアルタイム・セッションルーム</b><br>
+            「🌐 ルームを作る」ボタンを押すと、専用のルームURLが発行されます。そのURLを参加メンバーに共有することで、全員が同じ予約状況やセットリストをリアルタイムに共有・操作できるようになります。</p>
+            
+            <p><b>3. 曲の進行とセットリスト管理</b><br>
+            曲リストの「＋ 追加」を押すと「📝 予約」に入ります。予約一覧では▲▼ボタンで順番の入れ替えが可能です。その後「演奏確定 ＞」で確定リストへ進め、演奏が終わったら「完了 ＞」を押して本日のセットリストに記録します。</p>
+
+            <p><b>4. 画像として保存・シェア</b><br>
+            「✅ 完了」画面を開き、「📸 画像として保存する」ボタンを押すと、本日のセットリストを1枚の綺麗な画像として端末に保存・シェアできます。</p>
+        </div>
+    </div>
+</div>
+
 <div class="modal-overlay" id="settingsModal" onclick="closeModal(event, 'settingsModal')">
     <div class="modal" onclick="event.stopPropagation()">
         <span class="modal-close" onclick="closeModal(null, 'settingsModal')">&times;</span>
@@ -290,13 +331,9 @@
         </div>
 
         <div class="setting-group" style="margin-top: 25px; border-top: 1px dashed var(--border-color); padding-top: 15px;">
-            <h3 style="font-size: 16px; margin-top: 0; color: var(--primary);">💡 使い方ガイド</h3>
-            <ul style="font-size: 13px; line-height: 1.6; padding-left: 20px; margin: 0; color: var(--text-color);">
-                <li style="margin-bottom: 6px;"><strong>CSVインポート：</strong> ヘッダーの「📁 CSVインポート」からお持ちの曲リスト（CSV）を読み込ませることで、このツールで利用できるようになります。</li>
-                <li style="margin-bottom: 6px;"><strong>セッションルーム：</strong> 「ルームを作る」ボタンを押すと専用URLが発行されます。そのURLを参加者に共有することで、全員で1つのセットリストをリアルタイムに共有・操作できます。</li>
-                <li style="margin-bottom: 6px;"><strong>進行のやり方：</strong> 曲は「📝 予約」→「🎸 確定」→「✅ 完了」の順にボタンを押して進行させます。順番は▲▼ボタンで入れ替え可能です。</li>
-                <li><strong>画像保存：</strong> 「✅ 完了」画面の下部にあるボタンから、本日のセットリストを1枚の画像として保存・シェアできます。</li>
-            </ul>
+            <h3 style="font-size: 16px; margin-top: 0; color: var(--primary);">🏷️ アプリ情報</h3>
+            <p style="font-size: 13px; margin: 5px 0;">現在のバージョン: <b>Ver 1.0.0</b></p>
+            <p style="font-size: 12px; opacity: 0.8; margin: 0;">詳細な使い方は上部ヘッダーの「📖 使い方マニュアル」をご覧ください。</p>
         </div>
     </div>
 </div>
@@ -448,6 +485,21 @@
         textArea.focus(); textArea.select();
         try { document.execCommand('copy') ? alert('ルームのURLをコピーしました！') : alert('自動コピーできません。URLを直接コピーしてください。'); } catch (err) {}
         document.body.removeChild(textArea);
+    }
+
+    // =========================================
+    // CSVフォーマットダウンロード処理
+    // =========================================
+    function downloadCsvFormat() {
+        const csvContent = ",,,,,,,,,,,,\r\n,,,,,,,,,,,,\r\n頭文字,アーティスト,曲名,コードwiki,BPM,-,ジャンル,ジャンル②,タイアップ,検索,作詞,作曲,編曲\r\n";
+        const blob = new Blob([new Uint8Array([0xEF, 0xBB, 0xBF]), csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.setAttribute('href', url);
+        link.setAttribute('download', 'SetLinkSheet_Format.csv');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     // =========================================
